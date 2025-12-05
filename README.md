@@ -8,12 +8,6 @@ Last Update : 06 Desember 2025
 4. Waiting and Done!
 
 ## Changelog
-**Discord Crash**
-```
-Crash terjadi karena FFMPEG terjadi error, makannya saya menggunakan FFMPEG yang saya update ini agar tidak crash discord nya!
-```
-**Not Using BD & Vencord**
-```
-Sekarang tidak usah lagi menggunakan Batterdiscord dan juga Vencord, karena sudah bisa langsung stereo dan ini RAW Audio!
-```
+- Discord Crash
+- Not Using BD & Vencord
 
