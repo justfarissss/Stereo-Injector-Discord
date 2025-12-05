@@ -4,7 +4,7 @@ import glob
 import json
 
 github_user = "justfarissss"
-github_repo = "BetterDiscord-Stereo-Files"
+github_repo = "Database-Stereo-Discord"
 github_branch = "main"
 
 mappings = [
@@ -15,7 +15,7 @@ mappings = [
         "IsFolder": False
     },
     {
-        "Source": "VoiceModules",
+        "Source": "discord-node",
         "Destination": os.path.join(os.getenv('LOCALAPPDATA'), "Discord", "*app-*", "modules", "discord_voice-1", "discord_voice"),
         "UsePattern": True,
         "IsFolder": True
@@ -38,8 +38,8 @@ def githubfiles(user, repo, branch, file_path, destination_path, use_pattern):
     url = f"https://raw.githubusercontent.com/{user}/{repo}/{branch}/{file_path}"
     
     try:
-        print(f"  Source URL : {url}")
-        print(f"  Destination : {destination_path}")
+        print(f"  URL Sumber : {url}")
+        print(f"  Tujuan : {destination_path}")
         
         final_path = destination_path
         if use_pattern:
@@ -67,7 +67,7 @@ def githubfolder(user, repo, branch, folder_path, destination_path, use_pattern)
     
     try:
         print(f"  Mengambil isi folder dari: {folder_path}")
-        print(f"  Destination : {destination_path}")
+        print(f"  Tujuan : {destination_path}")
         
         final_path = destination_path
         if use_pattern:
@@ -99,7 +99,7 @@ def githubfolder(user, repo, branch, folder_path, destination_path, use_pattern)
                 file_name = item['name']
                 dest_file = os.path.join(final_path, file_name)
                 
-                print(f"    Downloading: {file_name}")
+                print(f"    Unduh: {file_name}")
                 try:
                     urllib.request.urlretrieve(file_url, dest_file)
                 except Exception as e:
@@ -117,8 +117,8 @@ def githubfolder(user, repo, branch, folder_path, destination_path, use_pattern)
         return False
 
 
-print("                 Stereo Inejector by justfarissss")
-print("⋆⁺₊⋆ ━━━━━━━━━━━━━━━━━━━ • ━━━━━━━━━━━━━━━ ⋆⁺₊⋆")
+print("        Stereo Inejector by justfarissss")
+print("⋆⁺₊⋆ ━━━━━━━━━━━━━━━━━━━ • ━━━━━━━━━━━━━━━━━━━ ⋆⁺₊⋆")
 print(f"Sumber Berkas: {github_user}/{github_repo}")
 print()
 
