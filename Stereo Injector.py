@@ -19,16 +19,16 @@ mappings = [
         "Destination": os.path.join(os.getenv('LOCALAPPDATA'), "Discord", "*app-*", "modules", "discord_voice-1", "discord_voice"),
         "UsePattern": True,
         "IsFolder": True
-    }
+    },
 ]
 
 def pattern(path):
     matches = glob.glob(path)
     
     if len(matches) == 0:
-        raise Exception(f"No folder found matching pattern: {path}")
+        raise Exception(f"Tidak ditemukan folder yang sesuai dengan pola yang ditentukan: {path}")
     elif len(matches) > 1:
-        print(f"  Multiple matches found. Using first match:")
+        print(f"  Ditemukan beberapa hasil yang cocok. Menggunakan hasil pertama yang cocok:")
         for match in matches:
             print(f"    - {match}")
     
@@ -52,21 +52,21 @@ def githubfiles(user, repo, branch, file_path, destination_path, use_pattern):
         
         dest_dir = os.path.dirname(final_path)
         if not os.path.exists(dest_dir):
-            print(f"  [ERROR] Destination directory does not exist: {dest_dir}")
+            print(f"  [ERROR] Direktori tujuan tidak ada: {dest_dir}")
             return False
         
         urllib.request.urlretrieve(url, final_path)
-        print("  [SUCCESS] File replaced successfully!")
+        print("  [SUCCESS] Berkas telah diganti dengan sukses!")
         return True
     except Exception as e:
-        print(f"  [ERROR] Failed to download: {e}")
+        print(f"  [ERROR] Gagal mengunduh: {e}")
         return False
 
 def githubfolder(user, repo, branch, folder_path, destination_path, use_pattern):
     api_url = f"https://api.github.com/repos/{user}/{repo}/contents/{folder_path}?ref={branch}"
     
     try:
-        print(f"  Fetching folder contents from: {folder_path}")
+        print(f"  Mengambil isi folder dari: {folder_path}")
         print(f"  Destination : {destination_path}")
         
         final_path = destination_path
@@ -79,7 +79,7 @@ def githubfolder(user, repo, branch, folder_path, destination_path, use_pattern)
                 return False
         
         if not os.path.exists(final_path):
-            print(f"  [ERROR] Destination directory does not exist: {final_path}")
+            print(f"  [ERROR] Direktori tujuan tidak ada: {final_path}")
             return False
         
         req = urllib.request.Request(api_url)
@@ -89,7 +89,7 @@ def githubfolder(user, repo, branch, folder_path, destination_path, use_pattern)
             contents = json.loads(response.read().decode())
         
         if not isinstance(contents, list):
-            print(f"  [ERROR] Invalid response from GitHub API")
+            print(f"  [ERROR] Respons tidak valid dari API GitHub")
             return False
         
         success = True
@@ -103,23 +103,23 @@ def githubfolder(user, repo, branch, folder_path, destination_path, use_pattern)
                 try:
                     urllib.request.urlretrieve(file_url, dest_file)
                 except Exception as e:
-                    print(f"    [ERROR] Failed to download {file_name}: {e}")
+                    print(f"    [ERROR] Gagal mengunduh {file_name}: {e}")
                     success = False
         
         if success:
-            print("  [SUCCESS] All files in folder downloaded successfully!")
+            print("  [SUCCESS] Semua file dalam folder telah diunduh dengan sukses!")
         else:
-            print("  [WARNING] Some files failed to download")
+            print("  [WARNING] Beberapa file gagal diunduh.")
         
         return success
     except Exception as e:
-        print(f"  [ERROR] Failed to fetch folder: {e}")
+        print(f"  [ERROR] Gagal mengambil folder: {e}")
         return False
 
 
-print("                 Stereo Installation")
+print("                 Stereo Inejector by justfarissss")
 print("⋆⁺₊⋆ ━━━━━━━━━━━━━━━━━━━ • ━━━━━━━━━━━━━━━ ⋆⁺₊⋆")
-print(f"Source of Files: {github_user}/{github_repo}")
+print(f"Sumber Berkas: {github_user}/{github_repo}")
 print()
 
 success_count = 0
@@ -156,10 +156,10 @@ for mapping in mappings:
     print()
 
 if fail_count == 0:
-    print("\nStereo has been installed, start Discord and see if it works!")
-    print("\nNote : There are current issues with playing some mp3(s) and mp4(s) please be aware of this.")
+    print("\nStereo telah dipasang, buka Discord dan lihat apakah berfungsi!")
+    print("\nCatatan: Saat ini terdapat masalah dalam memutar beberapa file MP3 dan MP4. Mohon diperhatikan hal ini.")
 else:
-    print("\nSome files failed to update. Check the output above.")
+    print("\nBeberapa file gagal diperbarui. Periksa output di atas.")
 
-print("\nPress Enter to exit...")
+print("\nTekan Enter untuk keluar...")
 input()
