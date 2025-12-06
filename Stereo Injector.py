@@ -125,10 +125,12 @@ for variant in discord_variants:
     #    Kita resolve semua, lalu unduh isi folder GitHub ke masing-masing direktori modul.
     mappings = [
         {
+            "Kind": "file",
             "Source": "ffmpeg.dll",
             "DestPattern": os.path.join(localappdata, variant, "app-*", "ffmpeg.dll"),
         },
         {
+            "Kind": "folder",
             "Source": "discord-node",
             "DestPattern": os.path.join(localappdata, variant, "app-*", "modules", "discord_voice-*", "discord_voice"),
         },
