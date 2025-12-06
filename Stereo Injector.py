@@ -2,164 +2,163 @@ import os
 import urllib.request
 import glob
 import json
+import re
+from pathlib import Path
 
+# ===== Konfigurasi GitHub =====
 github_user = "justfarissss"
 github_repo = "Database-Stereo-Discord"
 github_branch = "main"
 
-mappings = [
-    {
-        "Source": "ffmpeg.dll",
-        "Destination": os.path.join(os.getenv('LOCALAPPDATA'), "Discord", "*app*", "ffmpeg.dll"),
-        "UsePattern": True,
-        "IsFolder": False
-    },
-    {
-        "Source": "discord-node",
-        "Destination": os.path.join(os.getenv('LOCALAPPDATA'), "Discord", "*app-*", "modules", "discord_voice-1", "discord_voice"),
-        "UsePattern": True,
-        "IsFolder": True
-    },
-]
+# ===== Varian Discord =====
+discord_variants = ["Discord", "DiscordPTB", "DiscordCanary"]
 
-def pattern(path):
-    matches = glob.glob(path)
-    
-    if len(matches) == 0:
-        raise Exception(f"Tidak ditemukan folder yang sesuai dengan pola yang ditentukan: {path}")
-    elif len(matches) > 1:
-        print(f"  Ditemukan beberapa hasil yang cocok. Menggunakan hasil pertama yang cocok:")
-        for match in matches:
-            print(f"    - {match}")
-    
-    return matches[0]
+localappdata = os.environ.get("LOCALAPPDATA")
+if not localappdata:
+    raise RuntimeError("Env %LOCALAPPDATA% tidak ditemukan.")
 
-def githubfiles(user, repo, branch, file_path, destination_path, use_pattern):
+# Regex contoh untuk folder app-1.0.N (jika nanti dipakai filter 'terbaru')
+APP_VER_RE = re.compile(r"^app-1\.0\.(\d+)$")
+
+def resolve_targets(path_pattern: str) -> list[str]:
+    """Kembalikan SEMUA hasil glob. Tidak memilih hanya satu."""
+    matches = glob.glob(path_pattern)
+    if not matches:
+        print(f"  [INFO] Tidak ada match untuk pola: {path_pattern}")
+        return []
+    # Hapus duplikat + urutkan biar output rapi
+    uniq = sorted(set(matches))
+    print(f"  [MATCH] {len(uniq)} target ditemukan untuk pola ini.")
+    for m in uniq:
+        print(f"    - {m}")
+    return uniq
+
+def githubfiles(user, repo, branch, file_path, destination_file) -> bool:
+    """Unduh 1 file mentah dari GitHub ke path file tujuan."""
     url = f"https://raw.githubusercontent.com/{user}/{repo}/{branch}/{file_path}"
-    
     try:
-        print(f"  URL Sumber : {url}")
-        print(f"  Tujuan : {destination_path}")
-        
-        final_path = destination_path
-        if use_pattern:
-            try:
-                final_path = pattern(destination_path)
-                print(f"  Resolved to: {final_path}")
-            except Exception as e:
-                print(f"  [ERROR] {e}")
-                return False
-        
-        dest_dir = os.path.dirname(final_path)
-        if not os.path.exists(dest_dir):
-            print(f"  [ERROR] Direktori tujuan tidak ada: {dest_dir}")
+        print(f"    [GET] {url}")
+        dest_dir = os.path.dirname(destination_file)
+        if not os.path.isdir(dest_dir):
+            print(f"    [ERROR] Direktori tujuan tidak ada: {dest_dir}")
             return False
-        
-        urllib.request.urlretrieve(url, final_path)
-        print("  [SUCCESS] Berkas telah diganti dengan sukses!")
+        urllib.request.urlretrieve(url, destination_file)
+        print(f"    [OK] File tertulis: {destination_file}")
         return True
     except Exception as e:
-        print(f"  [ERROR] Gagal mengunduh: {e}")
+        print(f"    [ERROR] Unduh/ganti gagal: {e}")
         return False
 
-def githubfolder(user, repo, branch, folder_path, destination_path, use_pattern):
+def githubfolder(user, repo, branch, folder_path, destination_dir) -> bool:
+    """Unduh semua file pada folder GitHub (level 1) ke direktori tujuan."""
     api_url = f"https://api.github.com/repos/{user}/{repo}/contents/{folder_path}?ref={branch}"
-    
     try:
-        print(f"  Mengambil isi folder dari: {folder_path}")
-        print(f"  Tujuan : {destination_path}")
-        
-        final_path = destination_path
-        if use_pattern:
-            try:
-                final_path = pattern(destination_path)
-                print(f"  Resolved to: {final_path}")
-            except Exception as e:
-                print(f"  [ERROR] {e}")
-                return False
-        
-        if not os.path.exists(final_path):
-            print(f"  [ERROR] Direktori tujuan tidak ada: {final_path}")
-            return False
-        
-        req = urllib.request.Request(api_url)
-        req.add_header('User-Agent', 'Python-Script')
-        
-        with urllib.request.urlopen(req) as response:
-            contents = json.loads(response.read().decode())
-        
+        print(f"    [API] {api_url}")
+        req = urllib.request.Request(api_url, headers={'User-Agent': 'Python-Script'})
+        with urllib.request.urlopen(req) as resp:
+            contents = json.loads(resp.read().decode())
+
         if not isinstance(contents, list):
-            print(f"  [ERROR] Respons tidak valid dari API GitHub")
+            print("    [ERROR] Respons API tidak valid.")
             return False
-        
-        success = True
+
+        if not os.path.isdir(destination_dir):
+            print(f"    [ERROR] Direktori tujuan tidak ada: {destination_dir}")
+            return False
+
+        ok_all = True
         for item in contents:
-            if item['type'] == 'file':
-                file_url = item['download_url']
-                file_name = item['name']
-                dest_file = os.path.join(final_path, file_name)
-                
-                print(f"    Unduh: {file_name}")
-                try:
-                    urllib.request.urlretrieve(file_url, dest_file)
-                except Exception as e:
-                    print(f"    [ERROR] Gagal mengunduh {file_name}: {e}")
-                    success = False
-        
-        if success:
-            print("  [SUCCESS] Semua file dalam folder telah diunduh dengan sukses!")
+            if item.get('type') != 'file':
+                continue
+            file_url = item.get('download_url')
+            file_name = item.get('name')
+            dest_file = os.path.join(destination_dir, file_name)
+            try:
+                print(f"      - Unduh {file_name}")
+                urllib.request.urlretrieve(file_url, dest_file)
+            except Exception as e:
+                print(f"        [ERROR] {file_name}: {e}")
+                ok_all = False
+
+        if ok_all:
+            print("    [OK] Semua file folder terunduh.")
         else:
-            print("  [WARNING] Beberapa file gagal diunduh.")
-        
-        return success
+            print("    [WARN] Beberapa file gagal diunduh.")
+        return ok_all
     except Exception as e:
-        print(f"  [ERROR] Gagal mengambil folder: {e}")
+        print(f"    [ERROR] Gagal ambil folder: {e}")
         return False
 
-
-print("        Stereo Inejector by justfarissss")
+print("        Stereo Injector by justfarissss")
 print("⋆⁺₊⋆ ━━━━━━━━━━━━━━━━━━━ • ━━━━━━━━━━━━━━━━━━━ ⋆⁺₊⋆")
-print(f"Sumber Berkas: {github_user}/{github_repo}")
-print()
+print(f"Sumber Berkas: {github_user}/{github_repo}\n")
 
-success_count = 0
-fail_count = 0
-counter = 0
+grand_success = 0
+grand_fail = 0
 
-for mapping in mappings:
-    counter += 1
-    print(f"[{counter}/{len(mappings)}] Installing : {mapping['Source']}")
-    
-    if mapping.get('IsFolder', False):
-        result = githubfolder(
-            github_user,
-            github_repo,
-            github_branch,
-            mapping['Source'],
-            mapping['Destination'],
-            mapping['UsePattern']
-        )
-    else:
-        result = githubfiles(
-            github_user,
-            github_repo,
-            github_branch,
-            mapping['Source'],
-            mapping['Destination'],
-            mapping['UsePattern']
-        )
-    
-    if result:
-        success_count += 1
-    else:
-        fail_count += 1
-    print()
+for variant in discord_variants:
+    print(f"\n=== VARIANT: {variant} ===")
+    base = Path(localappdata) / variant
+    if not base.exists():
+        print(f"[SKIP] {variant} tidak terinstal di {base}")
+        continue
 
-if fail_count == 0:
-    print("\nStereo telah dipasang, buka Discord dan lihat apakah berfungsi!")
-    print("\nCatatan: Saat ini terdapat masalah dalam memutar beberapa file MP3 dan MP4. Mohon diperhatikan hal ini.")
+    # --- (Opsional) Cari app-1.0.N terbaru jika mau batasi hanya 1 versi ---
+    # Jika kamu ingin proses SEMUA app-*, lewati blok ini.
+    # terbaru_n = -1
+    # terbaru_dirname = None
+    # for d in base.iterdir():
+    #     if d.is_dir():
+    #         m = APP_VER_RE.match(d.name)
+    #         if m:
+    #             n = int(m.group(1))
+    #             if n > terbaru_n:
+    #                 terbaru_n = n
+    #                 terbaru_dirname = d.name
+    # print(f"[INFO] app terbaru: {terbaru_dirname if terbaru_dirname else '(tidak ditemukan)'}")
+
+    # --- Bangun mappings PER VARIAN ---
+    # Catatan:
+    #  - Untuk ffmpeg.dll, tujuan harus file (1-1). Kita akan resolve semua app-*/ffmpeg.dll,
+    #    lalu tulis file untuk masing-masing target.
+    #  - Untuk folder discord-node, tujuan adalah direktori modul '.../modules/*discord_voice-*'
+    #    Kita resolve semua, lalu unduh isi folder GitHub ke masing-masing direktori modul.
+    mappings = [
+        {
+            "Source": "ffmpeg.dll",
+            "DestPattern": os.path.join(localappdata, variant, "app-*", "ffmpeg.dll"),
+        },
+        {
+            "Source": "discord-node",
+            "DestPattern": os.path.join(localappdata, variant, "app-*", "modules", "discord_voice-*", "discord_voice"),
+        },
+    ]
+
+    for i, mapping in enumerate(mappings, 1):
+        print(f"\n[{i}/{len(mappings)}] Pasang: {mapping['Source']} (Kind={mapping['Kind']})")
+        targets = resolve_targets(mapping["DestPattern"])
+
+        if not targets:
+            print("  [INFO] Tidak ada target untuk pola ini. Lanjut.")
+            continue
+
+        for t in targets:
+            if mapping["Kind"] == "file":
+                ok = githubfiles(github_user, github_repo, github_branch, mapping["Source"], t)
+            else:
+                ok = githubfolder(github_user, github_repo, github_branch, mapping["Source"], t)
+
+            if ok:
+                grand_success += 1
+            else:
+                grand_fail += 1
+
+print("\n=== RINGKASAN ===")
+print(f"Berhasil: {grand_success}")
+print(f"Gagal   : {grand_fail}")
+if grand_fail == 0 and grand_success > 0:
+    print("Stereo telah dipasang pada semua target yang ditemukan. Silakan buka Discord untuk uji.")
+elif grand_success == 0:
+    print("Tidak ada perubahan yang dilakukan. Cek log di atas.")
 else:
-    print("\nBeberapa file gagal diperbarui. Periksa output di atas.")
-
-print("\nTekan Enter untuk keluar...")
-input()
+    print("Beberapa pemasangan gagal. Cek log di atas.")
