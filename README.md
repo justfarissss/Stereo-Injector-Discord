@@ -1,13 +1,15 @@
-# STEREO INJECTOR DISCORD
-Last Update : 06 Desember 2025
-
-## Cara Penggunaan
-1. Install Python
-2. Klik Kanan di Bagian Stereo Injector.py
-3. Open With Python
-4. Waiting and Done!
+# STEREO DISCORD
+Last Update : 08 Desember 2025
 
 ## Changelog
-- Discord Crash
-- Not Using BD & Vencord
 
+**{ * } Update :**
+
+Fix FFMPEG because Crashing Discord
+Stereo RAW Microphone
+Low Pass Filter Disable
+
+**{ * } Credit :**
+
+Node Stereo By : [Skenzo](https://github.com/outpunching)
+FFMPEG By : [Sh6un](https://github.com/sh6un)
