@@ -90,6 +90,7 @@ def githubfolder(user, repo, branch, folder_path, destination_dir) -> bool:
         return False
 
 print("        Stereo Injector by justfarissss")
+print("             Stereo Node by Skenzo")
 print("⋆⁺₊⋆ ━━━━━━━━━━━━━━━━━━━ • ━━━━━━━━━━━━━━━━━━━ ⋆⁺₊⋆")
 print(f"Sumber Berkas: {github_user}/{github_repo}\n")
 
