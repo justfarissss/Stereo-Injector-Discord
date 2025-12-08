@@ -6,7 +6,9 @@ Last Update : 08 Desember 2025
 **{ * } Update :**
 
 Fix FFMPEG because Crashing Discord
+
 Stereo RAW Microphone
+
 Low Pass Filter Disable
 
 **{ * } Credit :**
