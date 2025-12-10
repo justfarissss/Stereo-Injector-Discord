@@ -103,27 +103,6 @@ for variant in discord_variants:
     if not base.exists():
         print(f"[SKIP] {variant} tidak terinstal di {base}")
         continue
-
-    # --- (Opsional) Cari app-1.0.N terbaru jika mau batasi hanya 1 versi ---
-    # Jika kamu ingin proses SEMUA app-*, lewati blok ini.
-    # terbaru_n = -1
-    # terbaru_dirname = None
-    # for d in base.iterdir():
-    #     if d.is_dir():
-    #         m = APP_VER_RE.match(d.name)
-    #         if m:
-    #             n = int(m.group(1))
-    #             if n > terbaru_n:
-    #                 terbaru_n = n
-    #                 terbaru_dirname = d.name
-    # print(f"[INFO] app terbaru: {terbaru_dirname if terbaru_dirname else '(tidak ditemukan)'}")
-
-    # --- Bangun mappings PER VARIAN ---
-    # Catatan:
-    #  - Untuk ffmpeg.dll, tujuan harus file (1-1). Kita akan resolve semua app-*/ffmpeg.dll,
-    #    lalu tulis file untuk masing-masing target.
-    #  - Untuk folder discord-node, tujuan adalah direktori modul '.../modules/*discord_voice-*'
-    #    Kita resolve semua, lalu unduh isi folder GitHub ke masing-masing direktori modul.
     mappings = [
         {
             "Kind": "file",
