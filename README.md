@@ -14,3 +14,5 @@ Low Pass Filter Disable
 **{ * } Credit :**
 
 Node Stereo & FFMPEG By : [Skenzo](https://github.com/outpunching)
+
+FFMPEG By : [Sh6un](https://github.com/sh6un)
